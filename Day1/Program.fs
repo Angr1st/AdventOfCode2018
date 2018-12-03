@@ -35,10 +35,9 @@ let accumulate acc element =
         resultValue::acc.List
     
     let doubleFrequency =
-        try
-            List.find (fun x -> x = resultValue) acc.List |> Some
-        with :? KeyNotFoundException ->
-            None
+        if ((List.where (fun x -> x = resultValue) acc.List).Length = 1)
+        then Some resultValue
+        else None
 
     let firstDoubleWins =
         match acc.FirstDoubleFrequency with
@@ -55,10 +54,14 @@ let turnToText acc =
 [<EntryPoint>]
 let main argv =
     let inputData = readInputData inputDataPath
-    let preparedInputData = 0::inputData
+    let preparedInputData' = List.append (0::inputData) inputData
+    let preparedInputData'' = List.append preparedInputData' inputData 
+    let preparedInputData''' = List.append preparedInputData'' inputData
+    let preparedInputData = List.append preparedInputData''' inputData
+
     let result = List.fold accumulate {List=[];Value = 0; FirstDoubleFrequency=None} preparedInputData 
     let textResult = turnToText result
     printfn "Result Frequency is: %i; First duplicate Frequency is: %s" result.Value textResult
-    let orderedList = List.sort result.List
-    orderedList |> List.iter (printfn "%i")
+    //let orderedList = List.sort result.List
+    //orderedList |> List.iter (printfn "%i")
     0 // return an integer exit code
