@@ -7,26 +7,24 @@ open System.Text
 [<Literal>]
 let inputDataPath = "./inputData.txt"
 
-let tryParseInt s = 
-    try 
-        s |> int |> Some
-    with :? FormatException -> 
-        None
+let tryParseInt i =
+    let tryParseIntInner = 
+        try 
+            i |> int |> Some
+        with :? FormatException -> 
+            None
+
+    match tryParseIntInner with
+    |Some i -> i
+    |None -> 0
 
 let readInputData path =
-   File.ReadAllLines(path, Encoding.UTF8) |> Array.map  tryParseInt 
-
-let ComputeFrequency oldValue newValue=
-    let newValueInt =
-        match newValue with
-        |Some i -> i
-        |None -> 0
-    
-    oldValue + newValueInt
+   File.ReadAllLines(path, Encoding.UTF8) |> Array.map  tryParseInt |> Array.toList
 
 [<EntryPoint>]
 let main argv =
     let inputData = readInputData inputDataPath
-    inputData |> Array.fold 
-    printfn "Hello World from F#!"
+    let preparedInputData = 0::inputData
+    let result = preparedInputData |> List.sum
+    printfn "Result Frequency is: %i" result
     0 // return an integer exit code
