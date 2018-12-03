@@ -51,15 +51,33 @@ let turnToText acc =
     |Some i -> String.Format("{0}", i)
     |None -> "Nothing"
 
+let FindDoubleFrequency inputData=
+    let createInitialInputData input=
+        0::input
+
+    let isFound state =
+        match state.FirstDoubleFrequency with
+        |Some _ -> false
+        |None -> true
+
+    let computeResult state data =
+        List.fold accumulate state data
+
+    let initial = createInitialInputData inputData
+    let mutable acc = {List=[];Value = 0; FirstDoubleFrequency=None}
+    acc <- computeResult acc initial
+    
+    while isFound acc do
+        acc <- computeResult acc inputData
+    
+    acc
+
 [<EntryPoint>]
 let main argv =
     let inputData = readInputData inputDataPath
-    let preparedInputData' = List.append (0::inputData) inputData
-    let preparedInputData'' = List.append preparedInputData' inputData 
-    let preparedInputData''' = List.append preparedInputData'' inputData
-    let preparedInputData = List.append preparedInputData''' inputData
+    
+    let result = FindDoubleFrequency inputData
 
-    let result = List.fold accumulate {List=[];Value = 0; FirstDoubleFrequency=None} preparedInputData 
     let textResult = turnToText result
     printfn "Result Frequency is: %i; First duplicate Frequency is: %s" result.Value textResult
     //let orderedList = List.sort result.List
