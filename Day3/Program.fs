@@ -37,5 +37,7 @@ let initFabric size =
 
 [<EntryPoint>]
 let main argv =
+    let fabric = initFabric 1000
+
     printfn "Hello World from F#!"
     0 // return an integer exit code
