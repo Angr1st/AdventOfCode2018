@@ -3,6 +3,7 @@
 open System
 open System.IO
 open System.Text
+open System
 
 [<Literal>]
 let inputDataPath = "./inputData.txt"
@@ -22,7 +23,17 @@ type FabricPieceLocation =
     YCoord:int}
 
 type FabricPiece =
-    |NotTaken of 
+    |NotTaken of FabricPieceLocation
+    |Taken of FabricPieceLocation * Memory<ElfRequest>[]
+
+let initFabric size =
+    let mutable fabric = List.empty<FabricPiece>
+
+    for i=1 to size do
+        for j=1 to size do
+            fabric <- NotTaken {XCoord=i;YCoord=j}::fabric
+    
+    fabric
 
 [<EntryPoint>]
 let main argv =
