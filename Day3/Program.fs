@@ -38,10 +38,12 @@ let initFabric size =
     
     fabric
 
-let toElfRequest (str:string) =   
-    let tryParseInt (i:ReadOnlySpan<char>) =
+let toElfRequest (str:string) = 
+    let mutable outerResult = 0
+    let mutable outerResult' = 0
+    let tryParseInt (innerResult:byref<int>) (i:ReadOnlySpan<char>)=        
         let tempResult =
-            match System.Int32.TryParse(i, out int innerResult) with
+            match System.Int32.TryParse(i, &innerResult) with
             | true -> Some innerResult
             | false -> None
 
@@ -49,8 +51,8 @@ let toElfRequest (str:string) =
         |Some i -> i
         |None -> 0
 
-    let getInt x y= (str.AsSpan().Slice(x,y)) |> tryParseInt
-    let getInt' x = (str.AsSpan().Slice(x)) |> tryParseInt
+    let getInt x y= (str.AsSpan().Slice(x,y)) |> tryParseInt &outerResult
+    let getInt' x = (str.AsSpan().Slice(x)) |> tryParseInt &outerResult'
     
     let positionOfAt = str.IndexOf "@"
     let positionOfComma = str.IndexOf ","
