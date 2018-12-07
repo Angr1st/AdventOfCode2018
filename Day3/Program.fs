@@ -50,24 +50,30 @@ let tryParseInt i =
     |None -> 0
 
 let toElfRequest (str:string) = 
-
-    let getInt x y= (str.Substring(x,y)) |> tryParseInt 
-    let getInt' x = (str.Substring(x)) |> tryParseInt 
+    let dif x y = y - x
+    let getInt x y =
+        let getInt' x = (str.Substring(x)) |> tryParseInt 
+        let getInt'' x y = (str.Substring( x, (dif x y) )) |> tryParseInt 
+        let innerX = x + 1 
+        if (y = 0) then 
+            (getInt' innerX) 
+        else 
+            (getInt'' innerX y)
 
     let positionOfAt = str.IndexOf "@"
     let positionOfComma = str.IndexOf ","
     let positionOfColon = str.IndexOf ":"
     let positionOfX = str.IndexOf "x"
 
-    let  number =  getInt 1 positionOfAt
+    let  number =  getInt 0 positionOfAt
 
     let  xCoord = getInt positionOfAt positionOfComma
 
     let yCoord = getInt positionOfComma positionOfColon
 
-    let xSize = getInt positionOfColon positionOfX
+    let xSize = getInt positionOfColon  positionOfX
 
-    let ySize = getInt' positionOfX
+    let ySize = getInt positionOfX 0
 
     {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize}
 
