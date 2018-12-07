@@ -38,30 +38,30 @@ let initFabric size =
     
     fabric
 
+let tryParseInt i =
+    let tryParseIntInner = 
+        try 
+            i |> int |> Some
+        with :? FormatException -> 
+            None
+
+    match tryParseIntInner with
+    |Some i -> i
+    |None -> 0
+
 let toElfRequest (str:string) = 
-    let mutable outerResult = 0
-    let mutable outerResult' = 0
-    let tryParseInt (innerResult:byref<int>) (i:ReadOnlySpan<char>)=        
-        let tempResult =
-            match System.Int32.TryParse(i, &innerResult) with
-            | true -> Some innerResult
-            | false -> None
 
-        match tempResult with
-        |Some i -> i
-        |None -> 0
+    let getInt x y= (str.Substring(x,y)) |> tryParseInt 
+    let getInt' x = (str.Substring(x)) |> tryParseInt 
 
-    let getInt x y= (str.AsSpan().Slice(x,y)) |> tryParseInt &outerResult
-    let getInt' x = (str.AsSpan().Slice(x)) |> tryParseInt &outerResult'
-    
     let positionOfAt = str.IndexOf "@"
     let positionOfComma = str.IndexOf ","
     let positionOfColon = str.IndexOf ":"
     let positionOfX = str.IndexOf "x"
 
-    let number = getInt 1 positionOfAt
+    let  number =  getInt 1 positionOfAt
 
-    let xCoord = getInt positionOfAt positionOfComma
+    let  xCoord = getInt positionOfAt positionOfComma
 
     let yCoord = getInt positionOfComma positionOfColon
 
