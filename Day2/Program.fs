@@ -5,7 +5,7 @@ open System.IO
 open System.Text
 
 [<Literal>]
-let inputDataPath = "./inputData.txt"
+let InputDataPath = "./inputData.txt"
         
 let readInputData path =
    File.ReadAllLines(path, Encoding.UTF8) |> Array.toList
@@ -32,7 +32,7 @@ let getDistinct (x:string,y:string) =
 
 [<EntryPoint>]
 let main argv =
-    let checksums = readInputData inputDataPath
+    let checksums = readInputData InputDataPath
     let checksumListLength = checksums.Length
     let duplicateValues = List.collect (fun x -> List.replicate checksumListLength x) checksums
     let duplicateList = concatListTimes checksums checksumListLength
