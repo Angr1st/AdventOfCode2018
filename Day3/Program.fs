@@ -12,16 +12,17 @@ let InputDataPath = "./inputData.txt"
 let readInputData path =
    File.ReadAllLines(path, Encoding.UTF8) |> Array.toList
 
+type FabricPieceLocation =
+    {XCoord:int;
+    YCoord:int}
+
 type ElfRequest =
     {Number:int;
     XCoord:int;
     YCoord:int;
     XSize:int;
-    YSize:int}
-
-type FabricPieceLocation =
-    {XCoord:int;
-    YCoord:int}
+    YSize:int;
+    CoordList:FabricPieceLocation list}
 
 type FabricPiece =
     |NotTaken of FabricPieceLocation
