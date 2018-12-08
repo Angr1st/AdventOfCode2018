@@ -7,7 +7,7 @@ open System
 open System
 
 [<Literal>]
-let inputDataPath = "./inputData.txt"
+let InputDataPath = "./inputData.txt"
         
 let readInputData path =
    File.ReadAllLines(path, Encoding.UTF8) |> Array.toList
@@ -25,7 +25,7 @@ type FabricPieceLocation =
 
 type FabricPiece =
     |NotTaken of FabricPieceLocation
-    |Taken of FabricPieceLocation * Memory<ElfRequest>[]
+    |Taken of FabricPieceLocation * ElfRequest list
 
 let initFabric size =
     let mutable fabric = List.empty<FabricPiece>
@@ -77,11 +77,20 @@ let toElfRequest (str:string) =
 
     {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize}
 
+let processElfRequest leFabric elfRequest=
+    let foundFabricLocation xCord yCord element=
+        match element with
+        |Taken (x,_) -> (x.XCoord = xCord && x.YCoord = yCord)
+        |NotTaken x -> (x.XCoord = xCord && x.YCoord = yCord)
+
+    let getFabricPiece x y = List.find (foundFabricLocation x y) leFabric
+    
+    let fabricPiece = leFabric
 
 [<EntryPoint>]
 let main argv =
     let fabric = initFabric 1000
-    let inputData = readInputData inputDataPath |> List.map toElfRequest
+    let inputData = readInputData InputDataPath |> List.map toElfRequest
 
 
 
