@@ -77,26 +77,43 @@ let toElfRequest (str:string) =
 
     {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize}
 
-let processElfRequest leFabric (elfRequests:ElfRequest list)=
-    let findMatchingElfRequest x y request =
+let processElfRequests (elfRequests:ElfRequest list) (leFabricPiece:FabricPiece) =
+    let findMatchingElfRequest x y (request:ElfRequest) =
         let mutable resultList = []
-        for i = request.XCoord to request.XSize do
-            for j = request.YCoord to request.YSize do
+        for i = request.XCoord to request.XSize + request.XCoord do
+            for j = request.YCoord to request.YSize + request.YCoord do
                 resultList <- {XCoord=i;YCoord=j}::resultList
 
         (List.where (fun elem -> elem.XCoord = x && elem.YCoord = y) resultList).Length = 1    
 
     let getElfRequests x y = List.filter (findMatchingElfRequest x y) elfRequests
     
-    let selectedFabricPiece = getFabricPiece (elfRequest.XCoord) (elfRequest.YCoord)
-    let updatedFabricPiece = selectedFabricPiece
+    let listEmpty (someList:ElfRequest list) = someList.Length = 0
+
+    let getFabricLocation =
+        match leFabricPiece with
+        |NotTaken a -> a
+        |Taken (a,_) -> a
+
+    let selectedElfRequests = getElfRequests getFabricLocation.XCoord getFabricLocation.YCoord
+
+    if (selectedElfRequests |> listEmpty) then 
+        leFabricPiece
+    else
+        Taken ({XCoord=getFabricLocation.XCoord;YCoord=getFabricLocation.YCoord},selectedElfRequests)
+
+let filterForTaken element =
+    match element with
+    |NotTaken _ -> false
+    |Taken _ -> true
 
 [<EntryPoint>]
 let main argv =
     let fabric = initFabric 1000
     let inputData = readInputData InputDataPath |> List.map toElfRequest
+    let partialElfRequestProcessing = processElfRequests inputData
+    let resultFabric = fabric |> List.map partialElfRequestProcessing |> List.filter filterForTaken
 
 
-
-    printfn "Hello World from F#!"
+    printfn "Length of ResultList is: %i" resultFabric.Length
     0 // return an integer exit code
