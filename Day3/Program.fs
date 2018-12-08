@@ -66,9 +66,9 @@ let toElfRequest (str:string) =
     let positionOfColon = str.IndexOf ":"
     let positionOfX = str.IndexOf "x"
 
-    let  number =  getInt 0 positionOfAt
+    let number =  getInt 0 positionOfAt
 
-    let  xCoord = (getInt positionOfAt positionOfComma) + 1
+    let xCoord = (getInt positionOfAt positionOfComma) + 1
 
     let yCoord = (getInt positionOfComma positionOfColon) + 1
 
@@ -76,7 +76,14 @@ let toElfRequest (str:string) =
 
     let ySize = getInt positionOfX 0
 
-    {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize}
+    let createCoordList x y xSize ySize =
+        let mutable resultList = []
+        for i = x to xSize + x do
+            for j = y to ySize + y do
+                resultList <- {XCoord=i;YCoord=j}::resultList
+        resultList
+
+    {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize;CoordList=createCoordList xCoord yCoord xSize ySize}
 
 let processElfRequests (elfRequests:ElfRequest list) (leFabricPiece:FabricPiece) =
     let findMatchingElfRequest x y (request:ElfRequest) =
