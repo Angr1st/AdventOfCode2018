@@ -67,9 +67,9 @@ let toElfRequest (str:string) =
 
     let  number =  getInt 0 positionOfAt
 
-    let  xCoord = getInt positionOfAt positionOfComma
+    let  xCoord = (getInt positionOfAt positionOfComma) + 1
 
-    let yCoord = getInt positionOfComma positionOfColon
+    let yCoord = (getInt positionOfComma positionOfColon) + 1
 
     let xSize = getInt positionOfColon  positionOfX
 
@@ -77,15 +77,19 @@ let toElfRequest (str:string) =
 
     {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize}
 
-let processElfRequest leFabric elfRequest=
-    let foundFabricLocation xCord yCord element=
-        match element with
-        |Taken (x,_) -> (x.XCoord = xCord && x.YCoord = yCord)
-        |NotTaken x -> (x.XCoord = xCord && x.YCoord = yCord)
+let processElfRequest leFabric (elfRequests:ElfRequest list)=
+    let findMatchingElfRequest x y request =
+        let mutable resultList = []
+        for i = request.XCoord to request.XSize do
+            for j = request.YCoord to request.YSize do
+                resultList <- {XCoord=i;YCoord=j}::resultList
 
-    let getFabricPiece x y = List.find (foundFabricLocation x y) leFabric
+        (List.where (fun elem -> elem.XCoord = x && elem.YCoord = y) resultList).Length = 1    
+
+    let getElfRequests x y = List.filter (findMatchingElfRequest x y) elfRequests
     
-    let fabricPiece = leFabric
+    let selectedFabricPiece = getFabricPiece (elfRequest.XCoord) (elfRequest.YCoord)
+    let updatedFabricPiece = selectedFabricPiece
 
 [<EntryPoint>]
 let main argv =
