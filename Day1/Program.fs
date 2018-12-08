@@ -6,7 +6,7 @@ open System.Text
 open System.Collections.Generic
 
 [<Literal>]
-let inputDataPath = "./inputData.txt"
+let InputDataPath = "./inputData.txt"
 
 let tryParseInt i =
     let tryParseIntInner = 
@@ -74,7 +74,7 @@ let FindDoubleFrequency inputData=
 
 [<EntryPoint>]
 let main argv =
-    let inputData = readInputData inputDataPath
+    let inputData = readInputData InputDataPath
     
     let result = FindDoubleFrequency inputData
 
