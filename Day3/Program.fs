@@ -111,23 +111,33 @@ let filterForTaken element =
     |NotTaken _ -> false
     |Taken (_,b) -> b.Length > 1
 
-let executeAndLog action=
-    let stopWatch = new Stopwatch()
-    stopWatch.Start() |> ignore
-    printfn "Started action"
-    let result = action
-    stopWatch.Stop() |> ignore
-    printfn "Action took: %s" (stopWatch.Elapsed.ToString())
-    result
+type LoggingBuilder()=
+    
+    member this.Bind(x, f) = 
+        let stopWatch = new Stopwatch()
+        stopWatch.Start() |> ignore
+        printfn "Started action"
+        let result = f x
+        stopWatch.Stop() |> ignore
+        printfn "Action took: %s" (stopWatch.Elapsed.ToString())
+        result
+
+    member this.Return(x) = 
+        x
 
 [<EntryPoint>]
 let main argv =
-    let fabric = executeAndLog (initFabric 1000)
-    let inputData = executeAndLog (readInputData InputDataPath |> List.map toElfRequest)
-    let partialElfRequestProcessing = executeAndLog (processElfRequests inputData)
-    let resultFabric = executeAndLog (fabric |> List.map partialElfRequestProcessing |> List.filter filterForTaken)
+    let logger = LoggingBuilder()
+    let loggingWorkflow =
+        logger {
+            let! fabric = (initFabric 1000)
+            let! inputData = (readInputData InputDataPath |> List.map toElfRequest)
+            let! partialElfRequestProcessing =  (processElfRequests inputData)
+            let! resultFabric =  (fabric |> List.map partialElfRequestProcessing |> List.filter filterForTaken)
+            return resultFabric
+        }
+   
 
-
-    printfn "Length of ResultList is: %i" resultFabric.Length
+    printfn "Length of ResultList is: %i" loggingWorkflow.Length
     Console.ReadLine() |> ignore
     0 // return an integer exit code
