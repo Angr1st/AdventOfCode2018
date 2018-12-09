@@ -130,11 +130,12 @@ let main argv =
     let logger = LoggingBuilder()
     let loggingWorkflow =
         logger {
-            let! fabric = (initFabric 1000)
-            let! inputData = (readInputData InputDataPath |> List.map toElfRequest)
-            let! partialElfRequestProcessing =  (processElfRequests inputData)
-            let! resultFabric =  (fabric |> List.map partialElfRequestProcessing |> List.filter filterForTaken)
-            return resultFabric
+            let! fabric = initFabric 1000
+            let! inputData = List.map toElfRequest (readInputData InputDataPath)  
+            let partialElfRequestProcessing =  processElfRequests inputData
+            let! resultFabric = List.map partialElfRequestProcessing fabric 
+            let! filteredResult = List.filter filterForTaken resultFabric
+            return filteredResult
         }
    
 
