@@ -5,6 +5,7 @@ open System.IO
 open System.Text
 open System
 open System
+open System.Diagnostics
 
 [<Literal>]
 let InputDataPath = "./inputData.txt"
@@ -87,7 +88,7 @@ let toElfRequest (str:string) =
 
 let processElfRequests (elfRequests:ElfRequest list) (leFabricPiece:FabricPiece) =
     let findMatchingElfRequest x y (request:ElfRequest) =
-        (List.where (fun elem -> elem.XCoord = x && elem.YCoord = y) request.CoordList).Length = 1    
+        (List.where (fun (elem:FabricPieceLocation) -> elem.XCoord = x && elem.YCoord = y) request.CoordList).Length = 1    
 
     let getElfRequests x y = List.filter (findMatchingElfRequest x y) elfRequests
     
@@ -108,15 +109,25 @@ let processElfRequests (elfRequests:ElfRequest list) (leFabricPiece:FabricPiece)
 let filterForTaken element =
     match element with
     |NotTaken _ -> false
-    |Taken _ -> true
+    |Taken (_,b) -> b.Length > 1
+
+let executeAndLog action=
+    let stopWatch = new Stopwatch()
+    stopWatch.Start() |> ignore
+    printfn "Started action"
+    let result = action
+    stopWatch.Stop() |> ignore
+    printfn "Action took: %s" (stopWatch.Elapsed.ToString())
+    result
 
 [<EntryPoint>]
 let main argv =
-    let fabric = initFabric 1000
-    let inputData = readInputData InputDataPath |> List.map toElfRequest
-    let partialElfRequestProcessing = processElfRequests inputData
-    let resultFabric = fabric |> List.map partialElfRequestProcessing |> List.filter filterForTaken
+    let fabric = executeAndLog (initFabric 1000)
+    let inputData = executeAndLog (readInputData InputDataPath |> List.map toElfRequest)
+    let partialElfRequestProcessing = executeAndLog (processElfRequests inputData)
+    let resultFabric = executeAndLog (fabric |> List.map partialElfRequestProcessing |> List.filter filterForTaken)
 
 
     printfn "Length of ResultList is: %i" resultFabric.Length
+    Console.ReadLine() |> ignore
     0 // return an integer exit code
