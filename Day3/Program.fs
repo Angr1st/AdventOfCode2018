@@ -87,12 +87,7 @@ let toElfRequest (str:string) =
 
 let processElfRequests (elfRequests:ElfRequest list) (leFabricPiece:FabricPiece) =
     let findMatchingElfRequest x y (request:ElfRequest) =
-        let mutable resultList = []
-        for i = request.XCoord to request.XSize + request.XCoord do
-            for j = request.YCoord to request.YSize + request.YCoord do
-                resultList <- {XCoord=i;YCoord=j}::resultList
-
-        (List.where (fun elem -> elem.XCoord = x && elem.YCoord = y) resultList).Length = 1    
+        (List.where (fun elem -> elem.XCoord = x && elem.YCoord = y) request.CoordList).Length = 1    
 
     let getElfRequests x y = List.filter (findMatchingElfRequest x y) elfRequests
     
