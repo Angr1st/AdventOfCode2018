@@ -111,16 +111,15 @@ let filterForTaken element =
     |NotTaken _ -> false
     |Taken (_,b) -> b.Length > 1
 
-type LoggingBuilder()=
-    
+type LoggingBuilder()= 
     member this.Bind(x, f) = 
         let stopWatch = new Stopwatch()
         stopWatch.Start() |> ignore
         printfn "Started action"
-        let result = f x
+        let result = x ()
         stopWatch.Stop() |> ignore
         printfn "Action took: %s" (stopWatch.Elapsed.ToString())
-        result
+        f result
 
     member this.Return(x) = 
         x
@@ -130,11 +129,11 @@ let main argv =
     let logger = LoggingBuilder()
     let loggingWorkflow =
         logger {
-            let! fabric = initFabric 1000
-            let! inputData = List.map toElfRequest (readInputData InputDataPath)  
+            let! fabric = fun () ->(initFabric 1000)
+            let! inputData = fun () -> (List.map toElfRequest (readInputData InputDataPath)) 
             let partialElfRequestProcessing =  processElfRequests inputData
-            let! resultFabric = List.map partialElfRequestProcessing fabric 
-            let! filteredResult = List.filter filterForTaken resultFabric
+            let! resultFabric = fun () -> (List.map partialElfRequestProcessing fabric) 
+            let! filteredResult = fun () -> (List.filter filterForTaken resultFabric)
             return filteredResult
         }
    
