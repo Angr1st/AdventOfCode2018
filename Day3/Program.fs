@@ -88,9 +88,12 @@ let processElfRequests (elfRequests:ElfRequest list) (request:ElfRequest) =
         let underAndRight = (innerRequest.YCoord > request.Y2Coord && innerRequest.X2Coord < request.XCoord)
         underOrRight || overOrLeft || overAndRight || underAndRight
 
+    let calculateIntersectionPlane innerRequest=
+        
+
     let result innerRequest =
         if (innerRequest.Number > request.Number && !isNotIntersecting innerRequest) then
-            
+
 
 let filterForTaken element =
     match element with
