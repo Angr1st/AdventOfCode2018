@@ -23,7 +23,8 @@ type ElfRequest =
     YCoord:int;
     XSize:int;
     YSize:int;
-    CoordList:FabricPieceLocation list}
+    X2Coord:int;
+    Y2Coord:int}
 
 type FabricPiece =
     |NotTaken of FabricPieceLocation
@@ -77,14 +78,7 @@ let toElfRequest (str:string) =
 
     let ySize = getInt positionOfX 0
 
-    let createCoordList x y xSize ySize =
-        let mutable resultList = []
-        for i = x to xSize + x do
-            for j = y to ySize + y do
-                resultList <- {XCoord=i;YCoord=j}::resultList
-        resultList
-
-    {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize;CoordList=createCoordList xCoord yCoord xSize ySize}
+    {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize;X2Coord= xCoord + xSize;Y2Coord=yCoord+ySize}
 
 let processElfRequests (elfRequests:ElfRequest list) (leFabricPiece:FabricPiece) =
     let findMatchingElfRequest x y (request:ElfRequest) =
