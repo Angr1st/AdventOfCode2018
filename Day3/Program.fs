@@ -80,25 +80,17 @@ let toElfRequest (str:string) =
 
     {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize;X2Coord= xCoord + xSize;Y2Coord=yCoord+ySize}
 
-let processElfRequests (elfRequests:ElfRequest list) (leFabricPiece:FabricPiece) =
-    let findMatchingElfRequest x y (request:ElfRequest) =
-        (List.where (fun (elem:FabricPieceLocation) -> elem.XCoord = x && elem.YCoord = y) request.CoordList).Length = 1    
+let processElfRequests (elfRequests:ElfRequest list) (request:ElfRequest) =
+    let isNotIntersecting innerRequest=       
+        let underOrRight = (innerRequest.XCoord>request.X2Coord || innerRequest.YCoord > request.Y2Coord)
+        let overOrLeft = (innerRequest.X2Coord<request.XCoord || innerRequest.Y2Coord < request.YCoord)
+        let overAndRight = (innerRequest.XCoord > request.X2Coord && innerRequest.Y2Coord < request.YCoord)
+        let underAndRight = (innerRequest.YCoord > request.Y2Coord && innerRequest.X2Coord < request.XCoord)
+        underOrRight || overOrLeft || overAndRight || underAndRight
 
-    let getElfRequests x y = List.filter (findMatchingElfRequest x y) elfRequests
-    
-    let listEmpty (someList:ElfRequest list) = someList.Length = 0
-
-    let getFabricLocation =
-        match leFabricPiece with
-        |NotTaken a -> a
-        |Taken (a,_) -> a
-
-    let selectedElfRequests = getElfRequests getFabricLocation.XCoord getFabricLocation.YCoord
-
-    if (selectedElfRequests |> listEmpty) then 
-        leFabricPiece
-    else
-        Taken ({XCoord=getFabricLocation.XCoord;YCoord=getFabricLocation.YCoord},selectedElfRequests)
+    let result innerRequest =
+        if (innerRequest.Number > request.Number && !isNotIntersecting innerRequest) then
+            
 
 let filterForTaken element =
     match element with
