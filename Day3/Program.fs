@@ -30,17 +30,6 @@ type FabricPiece =
     |NotTaken of FabricPieceLocation
     |Taken of FabricPieceLocation * ElfRequest list
 
-let initFabric size =
-    let mutable fabric = List.empty<FabricPiece>
-
-    for i=1 to size do
-        //printfn "%i" i
-        for j=1 to size do
-            //printfn "%i" j
-            fabric <- NotTaken {XCoord=i;YCoord=j}::fabric
-    
-    fabric
-
 let tryParseInt i =
     let tryParseIntInner = 
         try 
@@ -89,11 +78,17 @@ let processElfRequests (elfRequests:ElfRequest list) (request:ElfRequest) =
         underOrRight || overOrLeft || overAndRight || underAndRight
 
     let calculateIntersectionPlane innerRequest=
-        
+        let xOverlap = Math.Max(0,Math.Min(request.XSize, innerRequest.XSize)) - Math.Max(request.XCoord, innerRequest.XCoord)
+        let yOverlap = Math.Max(0,Math.Min(request.YSize, innerRequest.YSize)) - Math.Max(request.YCoord, innerRequest.YCoord)
+
+        xOverlap * yOverlap
 
     let result innerRequest =
-        if (innerRequest.Number > request.Number && !isNotIntersecting innerRequest) then
+        if (innerRequest.Number > request.Number && not(isNotIntersecting innerRequest)) then
+            calculateIntersectionPlane innerRequest
+        else 0
 
+    elfRequests |> List.map result |> List.reduce (fun one two -> one + two)
 
 let filterForTaken element =
     match element with
@@ -118,15 +113,14 @@ let main argv =
     let logger = LoggingBuilder()
     let loggingWorkflow =
         logger {
-            let! fabric = fun () ->(initFabric 1000)
             let! inputData = fun () -> (List.map toElfRequest (readInputData InputDataPath)) 
             let partialElfRequestProcessing =  processElfRequests inputData
-            let! resultFabric = fun () -> (List.map partialElfRequestProcessing fabric) 
-            let! filteredResult = fun () -> (List.filter filterForTaken resultFabric)
-            return filteredResult
+            let! resultsList = fun () -> (List.map partialElfRequestProcessing inputData) 
+            let! result = fun () -> (List.reduce (fun one two -> one + two) resultsList)
+            return result
         }
    
 
-    printfn "Length of ResultList is: %i" loggingWorkflow.Length
+    printfn "Length of ResultList is: %i" loggingWorkflow
     Console.ReadLine() |> ignore
     0 // return an integer exit code
