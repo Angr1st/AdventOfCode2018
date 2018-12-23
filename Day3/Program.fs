@@ -13,6 +13,11 @@ let InputDataPath = "./inputData.txt"
 let readInputData path =
    File.ReadAllLines(path, Encoding.UTF8) |> Array.toList
 
+type FabricPieceRequest =
+    {Number:int;
+    XCoord:int;
+    YCoord:int}
+
 type FabricPieceLocation =
     {XCoord:int;
     YCoord:int}
@@ -78,6 +83,13 @@ let processElfRequests (elfRequests:ElfRequest list) (request:ElfRequest) =
         underOrRight || overOrLeft || overAndRight || underAndRight
 
     let calculateIntersectionPlane innerRequest=
+        let createCoordList x y xSize ySize =
+            let mutable resultList = []
+            for i = x to xSize + x do
+                for j = y to ySize + y do
+                    resultList <- {XCoord=i;YCoord=j}::resultList
+            resultList
+        
         let xOverlap = Math.Max(0,Math.Min(request.X2Coord, innerRequest.X2Coord)) - Math.Max(request.XCoord, innerRequest.XCoord)
         let yOverlap = Math.Max(0,Math.Min(request.Y2Coord, innerRequest.Y2Coord)) - Math.Max(request.YCoord, innerRequest.YCoord)
 
