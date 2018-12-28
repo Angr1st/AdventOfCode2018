@@ -74,7 +74,19 @@ let toElfRequest (str:string) =
 
     {Number=number;XCoord=xCoord;YCoord=yCoord;XSize=xSize;YSize=ySize;X2Coord= xCoord + xSize;Y2Coord=yCoord+ySize}
 
+let listAppend one two =
+    List.append one two
+
 let processElfRequests (elfRequests:ElfRequest list) (request:ElfRequest) =
+    let createCoordList x y xSize ySize =
+            let mutable resultList = []
+            for i = x to xSize + x do
+                for j = y to ySize + y do
+                    resultList <- {XCoord=i;YCoord=j}::resultList
+            resultList
+    
+    let requestCoords = createCoordList request.XCoord request.YCoord request.XSize request.YSize
+
     let isNotIntersecting innerRequest=       
         let underOrRight = (innerRequest.XCoord>request.X2Coord || innerRequest.YCoord > request.Y2Coord)
         let overOrLeft = (innerRequest.X2Coord<request.XCoord || innerRequest.Y2Coord < request.YCoord)
@@ -83,24 +95,33 @@ let processElfRequests (elfRequests:ElfRequest list) (request:ElfRequest) =
         underOrRight || overOrLeft || overAndRight || underAndRight
 
     let calculateIntersectionPlane innerRequest=
-        let createCoordList x y xSize ySize =
-            let mutable resultList = []
-            for i = x to xSize + x do
-                for j = y to ySize + y do
-                    resultList <- {XCoord=i;YCoord=j}::resultList
-            resultList
-        
-        let xOverlap = Math.Max(0,Math.Min(request.X2Coord, innerRequest.X2Coord)) - Math.Max(request.XCoord, innerRequest.XCoord)
-        let yOverlap = Math.Max(0,Math.Min(request.Y2Coord, innerRequest.Y2Coord)) - Math.Max(request.YCoord, innerRequest.YCoord)
+        let innerRequestCoords = createCoordList innerRequest.XCoord innerRequest.YCoord innerRequest.XSize innerRequest.YSize
 
-        xOverlap * yOverlap
+        let tryFindPredicate (elem:FabricPieceLocation) =
+            let tryFindResult = innerRequestCoords |> List.tryFind (fun innerElem -> elem.XCoord = innerElem.XCoord && elem.YCoord = innerElem.XCoord )
+
+            match tryFindResult with
+            |Some x -> true
+            |None -> false
+
+        let foldToIntersection acc elem =
+            let intersects = tryFindPredicate elem
+
+            let fabRequest = {Number = innerRequest.Number; XCoord = elem.XCoord; YCoord = elem.YCoord}
+
+            if intersects then fabRequest::acc
+            else acc
+
+
+        requestCoords |> List.fold foldToIntersection []
+        
 
     let result innerRequest =
         if (innerRequest.Number > request.Number && not(isNotIntersecting innerRequest)) then
             calculateIntersectionPlane innerRequest
-        else 0
+        else []
 
-    elfRequests |> List.map result |> List.reduce (fun one two -> one + two)
+    elfRequests |> List.map result |> List.reduce listAppend
 
 let filterForTaken element =
     match element with
@@ -128,7 +149,7 @@ let main argv =
             let! inputData = fun () -> (List.map toElfRequest (readInputData InputDataPath)) 
             let partialElfRequestProcessing =  processElfRequests inputData
             let! resultsList = fun () -> (List.map partialElfRequestProcessing inputData) 
-            let! result = fun () -> (List.reduce (fun one two -> one + two) resultsList)
+            let! result = fun () -> (List.reduce listAppend resultsList)
             return result
         }
    
