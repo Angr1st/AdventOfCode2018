@@ -16,7 +16,8 @@ let readInputData path =
 type FabricPieceRequest =
     {Number:int;
     XCoord:int;
-    YCoord:int}
+    YCoord:int;
+    XY:string}
 
 type FabricPieceLocation =
     {XCoord:int;
@@ -107,7 +108,7 @@ let processElfRequests (elfRequests:ElfRequest list) (request:ElfRequest) =
         let foldToIntersection acc elem =
             let intersects = tryFindPredicate elem
 
-            let fabRequest = {Number = innerRequest.Number; XCoord = elem.XCoord; YCoord = elem.YCoord}
+            let fabRequest = {Number = innerRequest.Number; XCoord = elem.XCoord; YCoord = elem.YCoord; XY = elem.XCoord.ToString() + elem.YCoord.ToString()}
 
             if intersects then fabRequest::acc
             else acc
@@ -123,10 +124,12 @@ let processElfRequests (elfRequests:ElfRequest list) (request:ElfRequest) =
 
     elfRequests |> List.map result |> List.reduce listAppend
 
-let filterForTaken element =
-    match element with
-    |NotTaken _ -> false
-    |Taken (_,b) -> b.Length > 1
+let transformTheGroups (group:string * FabricPieceRequest list) =
+    let fabReqList = snd group
+    let IsLongerThanOne = fabReqList.Length > 1
+
+    if IsLongerThanOne then 1 else 0
+   
 
 type LoggingBuilder()= 
     member this.Bind(x, f) = 
@@ -149,7 +152,9 @@ let main argv =
             let! inputData = fun () -> (List.map toElfRequest (readInputData InputDataPath)) 
             let partialElfRequestProcessing =  processElfRequests inputData
             let! resultsList = fun () -> (List.map partialElfRequestProcessing inputData) 
-            let! result = fun () -> (List.reduce listAppend resultsList)
+            let! preliminaryResult = fun () -> (List.reduce listAppend resultsList)
+            let preResultLength = preliminaryResult.Length
+            let! result = fun () -> ((preliminaryResult |> List.groupBy (fun index -> index.XY)) |> List.map transformTheGroups |> List.reduce (fun one two -> one + two) )
             return result
         }
    
